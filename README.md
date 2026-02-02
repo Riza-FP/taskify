@@ -23,5 +23,5 @@ Taskify is a Kanban-based task management application designed to help individua
 3. **Setup Frontend:** `cd frontend && npm install && npm run dev`
 
 ## 👥 The Team
-- **Frontend Developer:** [Your Name]
-- **Backend Developer:** [Friend's Name]
+- **Frontend Developer:** Riza Fauzan Pratama
+- **Backend Developer:** Muhammad Nabil
