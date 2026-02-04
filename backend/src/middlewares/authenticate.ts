@@ -30,6 +30,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
+        console.log(error, user)
         throw new AuthenticationError("Invalid or expired token");
     }
 
