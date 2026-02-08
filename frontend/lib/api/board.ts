@@ -15,7 +15,7 @@ interface RawTask {
     list_id: number;
     priority: string;
     deadline: string | null;
-    position: number;
+    rank: string;
 }
 
 // Fetch all boards for the current user
@@ -60,11 +60,12 @@ export async function getBoardDetails(boardId: string): Promise<BoardData> {
         const mappedTasks: Task[] = tasks.map(t => ({
             id: t.id.toString(),
             title: t.title,
+            list_id: list.id,
             description: t.description || undefined,
-            columnId: list.id.toString(), // Map list_id to columnId
+            columnId: list.id, // Map list_id to columnId
             tags: [],
             dueDate: t.deadline ? new Date(t.deadline).toISOString() : undefined,
-            position: t.position
+            rank: t.rank
         }));
 
         allTasks = [...allTasks, ...mappedTasks];

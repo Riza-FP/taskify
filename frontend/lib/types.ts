@@ -2,11 +2,11 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  columnId: string;
   tags: string[];
   dueDate?: string;
   assignee?: string; // URL to avatar or name
-  position: number;
+  rank: string; // use lexorank algo
+  columnId: number; 
 }
 
 export interface Column {
