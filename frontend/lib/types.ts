@@ -4,13 +4,12 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: string; // correlates to Column id
   priority: Priority;
   tags: string[];
   dueDate?: string;
   assignee?: string; // URL to avatar or name
-  position: number;
-  column_id: string;
+  rank: string; // use lexorank algo
+  list_id: number; // A.K.A column_id, normalize name with DB
 }
 
 export interface Column {

@@ -4,7 +4,7 @@ export type Task = Tables<"tasks">;
 
 export type CreateTaskDTO = {
     list_id: number;
-    position: number;
+    rank: string;
     title: string;
     description?: string;
     deadline?: string; // ISO Date string
@@ -13,7 +13,7 @@ export type CreateTaskDTO = {
 export type UpdateTaskDTO = {
     id: number;
     list_id: number;
-    position: number;
+    rank: string;
     title: string;
     description: string;
     deadline: string;

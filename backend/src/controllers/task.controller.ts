@@ -15,16 +15,17 @@ export const postTasks = async (req: Request, res: Response) => {
 export const putTasks = async (req: Request, res: Response) => {
     const supabase = (req as any).supabase;
     const { id } = req.params;
+
     const taskId = Number(id);
 
     const old = await getTaskById(supabase, taskId);
 
-    const { list_id, position, title, description, deadline } = req.body;
+    const { list_id, rank, title, description, deadline } = req.body;
 
     const request: UpdateTaskDTO = {
         id: old.id,
         list_id: list_id ?? old.list_id,
-        position: position ?? old.position,
+        rank: rank ?? old.rank,
         title: title ?? old.title,
         description: description,
         deadline: deadline,
@@ -42,7 +43,7 @@ export const deleteTasks = async (req: Request, res: Response) => {
     const { id } = req.params;
     const taskId = Number(id);
 
-    const old = await getTaskById(supabase, taskId);
+    await getTaskById(supabase, taskId);
 
     const task = await deleteTask(supabase, taskId);
 

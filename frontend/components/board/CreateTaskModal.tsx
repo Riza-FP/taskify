@@ -12,17 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  addTaskAsync,
-  SelectAllTasksbyListId,
-} from "@/store/slices/boardSlice";
+import { addTaskAsync, selectTasksByListId } from "@/store/slices/boardSlice";
 import { toast } from "sonner";
+import { Lexorank } from "@/lib/lexorank";
 
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  columnId: string | null;
+  columnId: number;
 }
+
+const lexorank = new Lexorank();
 
 export function CreateTaskModal({
   isOpen,
@@ -30,7 +30,7 @@ export function CreateTaskModal({
   columnId,
 }: CreateTaskModalProps) {
   const dispatch = useAppDispatch();
-  const tasks = useAppSelector(SelectAllTasksbyListId(columnId ?? ""));
+  const tasks = useAppSelector(selectTasksByListId(columnId));
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -41,10 +41,14 @@ export function CreateTaskModal({
 
     setLoading(true);
     try {
+      // TODO: handle re-indexing later
+      const lastRank = tasks.at(-1)?.rank ?? null;
+      const [rank] = lexorank.insert(lastRank, null);
+
       await dispatch(
         addTaskAsync({
           listId: columnId,
-          position: tasks.length + 1,
+          rank,
           title,
           description,
         }),
@@ -64,7 +68,7 @@ export function CreateTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
         </DialogHeader>

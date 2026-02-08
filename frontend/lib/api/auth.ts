@@ -1,5 +1,12 @@
 import { apiFetch } from "./client";
 
+export type RegisterRequestDTO = {
+    full_name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+};
+
 export async function login(email: string, password: string) {
   const data = await apiFetch("/auth/login", {
     method: "POST",
@@ -18,7 +25,7 @@ export async function login(email: string, password: string) {
   return data;
 }
 
-export async function register(data: any) {
+export async function register(data: RegisterRequestDTO) {
   const res = await apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify(data),

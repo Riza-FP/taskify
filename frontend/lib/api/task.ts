@@ -1,20 +1,20 @@
+import { Task } from "../types";
 import { apiFetch } from "./client";
 
-export async function createTask(listId: string | number, position: number, title: string, description?: string) {
+export async function createTask(listId: number, rank: string, title: string, description?: string) {
     const response = await apiFetch("/tasks", {
         method: "POST",
         body: JSON.stringify({
-            list_id: Number(listId),
+            list_id: listId,
             title,
             description,
-            position // Append to end by default
-            // priority - backend might not support it yet based on controller analysis, but passing it just in case or handling it later
+            rank,
         }),
     });
     return response.data;
 }
 
-export async function updateTask(taskId: string, updates: any) {
+export async function updateTask(taskId: string, updates: Partial<Task>) {
     const response = await apiFetch(`/tasks/${taskId}`, {
         method: "PUT",
         body: JSON.stringify(updates),

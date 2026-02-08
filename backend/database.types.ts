@@ -83,7 +83,7 @@ export type Database = {
           description: string | null
           id: number
           list_id: number
-          position: number
+          rank: string
           title: string
           updated_at: string
         }
@@ -93,7 +93,7 @@ export type Database = {
           description?: string | null
           id?: number
           list_id: number
-          position: number
+          rank: string
           title: string
           updated_at?: string
         }
@@ -103,7 +103,7 @@ export type Database = {
           description?: string | null
           id?: number
           list_id?: number
-          position?: number
+          rank?: string
           title?: string
           updated_at?: string
         }

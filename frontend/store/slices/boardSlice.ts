@@ -3,6 +3,7 @@ import { BoardData, Task } from '@/lib/types';
 import { getBoardDetails } from '@/lib/api/board';
 import { createTask as createTaskAPI, updateTask as updateTaskAPI, deleteTask as deleteTaskAPI } from '@/lib/api/task';
 import { RootState } from '..';
+import { compareLexorank } from '@/lib/lexorank';
 
 
 interface BoardState {
@@ -27,8 +28,8 @@ export const fetchBoardData = createAsyncThunk(
 
 export const addTaskAsync = createAsyncThunk(
     'board/addTask',
-    async ({ listId, position, title, description }: { listId: string; position: number; title: string, description?: string }) => {
-        const newTask = await createTaskAPI(listId, position, title, description);
+    async ({ listId, rank, title, description }: { listId: number; rank: string; title: string, description?: string }) => {
+        const newTask = await createTaskAPI(listId, rank, title, description);
         return newTask;
     }
 );
@@ -42,13 +43,13 @@ export const updateTaskAsync = createAsyncThunk(
 );
 
 export const moveTaskAsync = createAsyncThunk(
-    'board/moveTask',
-    async ({ taskId, newStatus }: { taskId: string; newStatus: string }) => {
-        // newStatus is the new column ID (which maps to list_id in backend)
-        await updateTaskAPI(taskId, { list_id: Number(newStatus) });
-        return { taskId, newStatus };
-    }
+  'board/moveTask',
+  async ({ taskId, list_id, rank }: { taskId: string; list_id: number; rank: string }) => {
+    await updateTaskAPI(taskId, { list_id, rank });
+    return { taskId, list_id, rank };
+  }
 );
+
 
 export const deleteTaskAsync = createAsyncThunk(
     'board/deleteTask',
@@ -60,9 +61,9 @@ export const deleteTaskAsync = createAsyncThunk(
 
 export const reorderTaskAsync = createAsyncThunk(
     'board/reorderTask',
-    async ({ taskId, position }: { taskId: string; position: number }) => {
-        await updateTaskAPI(taskId, { position });
-        return { taskId, position };
+    async ({ taskId, rank }: { taskId: string; rank: string }) => {
+        await updateTaskAPI(taskId, { rank });
+        return { taskId, rank };
     }
 );
 
@@ -70,11 +71,11 @@ export const boardSlice = createSlice({
     name: 'board',
     initialState,
     reducers: {
-        moveTask: (state, action: PayloadAction<{ taskId: string; newStatus: string }>) => {
-            const { taskId, newStatus } = action.payload;
+        moveTask: (state, action: PayloadAction<{ taskId: string; newListId: number }>) => {
+            const { taskId, newListId } = action.payload;
             const task = state.data.tasks.find((t) => t.id === taskId);
             if (task) {
-                task.status = newStatus;
+                task.list_id = newListId;
             }
         },
         setBoardData: (state, action: PayloadAction<BoardData>) => {
@@ -115,23 +116,23 @@ export const boardSlice = createSlice({
                 const apiTask = action.payload;
                 const newTask: Task = {
                     id: apiTask.id.toString(),
-                    column_id: apiTask.list_id,
+                    list_id: apiTask.list_id,
                     title: apiTask.title,
                     description: apiTask.description,
-                    status: apiTask.list_id.toString(), // Map list_id to status/columnId
                     priority: apiTask.priority || 'medium',
                     tags: [], // Default
                     dueDate: apiTask.deadline ? new Date(apiTask.deadline).toISOString() : undefined,
-                    position: apiTask.position || 0
+                    rank: apiTask.rank
                 };
 
                 state.data.tasks.push(newTask);
             })
             .addCase(moveTaskAsync.pending, (state, action) => {
-                const { taskId, newStatus } = action.meta.arg;
-                const task = state.data.tasks.find((t) => t.id === taskId);
+                const { taskId, list_id, rank } = action.meta.arg;
+                const task = state.data.tasks.find(t => t.id === taskId);
                 if (task) {
-                    task.status = newStatus;
+                    task.list_id = list_id;
+                    task.rank = rank;
                 }
             })
             .addCase(moveTaskAsync.rejected, (state, action) => {
@@ -140,10 +141,10 @@ export const boardSlice = createSlice({
                 console.error("Move task failed:", action.error);
             })
             .addCase(reorderTaskAsync.pending, (state, action) => {
-                const { taskId, position } = action.meta.arg;
+                const { taskId, rank } = action.meta.arg;
                 const task = state.data.tasks.find((t) => t.id === taskId);
                 if (task) {
-                    task.position = position;
+                    task.rank = rank;
                     // We might need to resort tasks here if the selector doesn't sort them, 
                     // but usually components handle sorting or selector does.
                 }
@@ -157,8 +158,18 @@ export const boardSlice = createSlice({
 
 export const { setBoardData, addTask, updateTask, moveTask } = boardSlice.actions;
 export default boardSlice.reducer;
-export const SelectAllTasksbyListId = (list_id: string) => (state: RootState) => {
-    // TODO: delete later, temporary debugger
-    console.log("TASKS BROO", state.board.data.tasks);
-    return state.board.data.tasks.filter((task) => task.status === list_id);
-}
+export const selectTasksByListId =
+  (listId: number) =>
+  (state: RootState) =>
+    state.board.data.tasks
+      .filter(t => t.list_id === listId)
+      .slice() // IMPORTANT: avoid mutating original array
+      .sort((a, b) => compareLexorank(a.rank, b.rank));
+
+export const selectLastRankInList =
+  (listId: number) =>
+  (state: RootState): string | null => {
+    const tasks = selectTasksByListId(listId)(state);
+    return tasks.length ? tasks[tasks.length - 1].rank : null;
+  };
+
