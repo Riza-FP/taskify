@@ -1,16 +1,12 @@
-export type Priority = 'low' | 'medium' | 'high';
-
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  status: string; // correlates to Column id
-  priority: Priority;
+  columnId: string;
   tags: string[];
   dueDate?: string;
   assignee?: string; // URL to avatar or name
   position: number;
-  column_id: string;
 }
 
 export interface Column {

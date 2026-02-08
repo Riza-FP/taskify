@@ -1,11 +1,8 @@
 'use client';
 
 import { Bell, Search, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { MOCK_TASKS } from '@/lib/mock-data';
 
 export function Navbar() {
-    const activeTaskCount = MOCK_TASKS.filter(t => t.status === 'in-progress').length;
 
     return (
         <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200/60 bg-white/80 px-6 backdrop-blur-xl transition-all">
@@ -28,12 +25,6 @@ export function Navbar() {
                 </button>
 
                 <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-semibold text-slate-700">John Doe</p>
-                        <p className="text-xs text-slate-500 font-medium">
-                            {activeTaskCount} Active Tasks
-                        </p>
-                    </div>
                     <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-600 ring-2 ring-white shadow-sm cursor-pointer hover:shadow-md transition-shadow">
                         <User size={18} />
                     </div>

@@ -15,8 +15,8 @@ export async function apiFetch(
   };
 
   // Debug logging
-  console.log("Requesting:", `${API_URL}${endpoint}`);
-  console.log("Headers:", headers);
+//   console.log("Requesting:", `${API_URL}${endpoint}`);
+//   console.log("Headers:", headers);
 
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...options,

@@ -1,7 +1,7 @@
 'use client';
 
 import { KanbanBoard } from '@/components/board/KanbanBoard';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppDispatch } from '@/store/hooks';
 import { fetchBoardData } from '@/store/slices/boardSlice';
 import { getBoards, createBoard, createList } from '@/lib/api/board';
@@ -13,7 +13,12 @@ export default function DashboardPage() {
     const dispatch = useAppDispatch();
     const router = useRouter();
 
+    const initialized = useRef(false);
+
     useEffect(() => {
+        if (initialized.current) return;
+        initialized.current = true;
+
         const initBoard = async () => {
             try {
                 // 1. Fetch available boards

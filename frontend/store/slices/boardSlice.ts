@@ -74,7 +74,7 @@ export const boardSlice = createSlice({
             const { taskId, newStatus } = action.payload;
             const task = state.data.tasks.find((t) => t.id === taskId);
             if (task) {
-                task.status = newStatus;
+                task.columnId = newStatus;
             }
         },
         setBoardData: (state, action: PayloadAction<BoardData>) => {
@@ -115,11 +115,9 @@ export const boardSlice = createSlice({
                 const apiTask = action.payload;
                 const newTask: Task = {
                     id: apiTask.id.toString(),
-                    column_id: apiTask.list_id,
+                    columnId: apiTask.list_id.toString(), // Map list_id to columnId
                     title: apiTask.title,
                     description: apiTask.description,
-                    status: apiTask.list_id.toString(), // Map list_id to status/columnId
-                    priority: apiTask.priority || 'medium',
                     tags: [], // Default
                     dueDate: apiTask.deadline ? new Date(apiTask.deadline).toISOString() : undefined,
                     position: apiTask.position || 0
@@ -131,7 +129,7 @@ export const boardSlice = createSlice({
                 const { taskId, newStatus } = action.meta.arg;
                 const task = state.data.tasks.find((t) => t.id === taskId);
                 if (task) {
-                    task.status = newStatus;
+                    task.columnId = newStatus;
                 }
             })
             .addCase(moveTaskAsync.rejected, (state, action) => {
@@ -148,6 +146,13 @@ export const boardSlice = createSlice({
                     // but usually components handle sorting or selector does.
                 }
             })
+            .addCase(updateTaskAsync.pending, (state, action) => {
+                const { id, changes } = action.meta.arg;
+                const task = state.data.tasks.find(t => t.id === id);
+                if (task) {
+                    Object.assign(task, changes);
+                }
+            })
             .addCase(deleteTaskAsync.fulfilled, (state, action) => {
                 const taskId = action.payload;
                 state.data.tasks = state.data.tasks.filter((t) => t.id !== taskId);
@@ -159,6 +164,6 @@ export const { setBoardData, addTask, updateTask, moveTask } = boardSlice.action
 export default boardSlice.reducer;
 export const SelectAllTasksbyListId = (list_id: string) => (state: RootState) => {
     // TODO: delete later, temporary debugger
-    console.log("TASKS BROO", state.board.data.tasks);
-    return state.board.data.tasks.filter((task) => task.status === list_id);
+    console.log("TASKS BROO", state.board.data.tasks.filter((task) => task.columnId === list_id));
+    return state.board.data.tasks.filter((task) => task.columnId === list_id);
 }

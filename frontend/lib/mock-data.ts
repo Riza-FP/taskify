@@ -9,40 +9,45 @@ export const MOCK_COLUMNS: Column[] = [
 
 export const MOCK_TASKS: Task[] = [
   {
-    id: 'task-1',
-    title: 'Research Competitors',
-    description: 'Analyze features of Trello, Asana, and Jira to identify gaps.',
-    status: 'todo',
-    priority: 'high',
-    tags: ['High', 'Strategy', 'Research'],
-    dueDate: '2023-10-25',
+    id: '1',
+    title: 'Research market trends',
+    description: 'Analyze current market trends in the fintech sector',
+    columnId: 'todo',
+    tags: ['High', 'Strategy'],
+    dueDate: '2024-10-24',
+    assignee: 'https://github.com/shadcn.png',
+    position: 0
   },
   {
-    id: 'task-2',
-    title: 'Design System Draft',
-    description: 'Create initial color palette and typography choices in Figma.',
-    status: 'in-progress',
-    priority: 'medium',
-    tags: ['Medium', 'Design', 'UI'],
-    dueDate: '2023-10-28',
+    id: '2',
+    title: 'Design system updates',
+    description: 'Update color palette and typography',
+    columnId: 'in-progress',
+    tags: ['Medium', 'Design'],
+    dueDate: '2024-10-25',
+    assignee: 'https://github.com/shadcn.png',
+    position: 0
   },
   {
-    id: 'task-3',
-    title: 'Setup Next.js Project',
-    status: 'done',
-    priority: 'high',
-    tags: ['High', 'Dev', 'Setup'],
-    dueDate: '2023-10-20',
+    id: '3',
+    title: 'Fix navigation bug',
+    description: 'Menu not closing on mobile devices',
+    columnId: 'done',
+    tags: ['Urgent', 'Bug'],
+    dueDate: '2024-10-20',
+    assignee: 'https://github.com/shadcn.png',
+    position: 0
   },
   {
-    id: 'task-4',
-    title: 'Authentication Flow',
-    description: 'Implement login and register pages with Supabase Auth.',
-    status: 'todo',
-    priority: 'high',
-    tags: ['Urgent', 'Dev', 'Auth'],
-    dueDate: '',
-  },
+    id: '4',
+    title: 'Q3 Report',
+    description: 'Draft the quarterly report for stakeholders',
+    columnId: 'todo',
+    tags: ['Low', 'Docs'],
+    dueDate: '2024-11-01',
+    assignee: 'https://github.com/shadcn.png',
+    position: 1
+  }
 ];
 
 export const INITIAL_BOARD: BoardData = {

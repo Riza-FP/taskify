@@ -93,7 +93,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
             // If dropped over a column
             if (over.data.current?.type === 'Column') {
                 const newStatus = over.id as string;
-                if (activeTask && activeTask.status !== newStatus) {
+                if (activeTask && activeTask.columnId !== newStatus) {
                     dispatch(moveTaskAsync({ taskId: activeId as string, newStatus }));
                 }
             }
@@ -101,16 +101,12 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
             else if (over.data.current?.type === 'Task') {
                 const overTask = tasks.find(t => t.id === overId);
                 if (activeTask && overTask) {
-                    if (activeTask.status !== overTask.status) {
+                    if (activeTask.columnId !== overTask.columnId) {
                         // Moving to different column
-                        dispatch(moveTaskAsync({ taskId: activeId as string, newStatus: overTask.status }));
+                        dispatch(moveTaskAsync({ taskId: activeId as string, newStatus: overTask.columnId }));
                     } else {
                         // Reordering in same column
-                        const oldIndex = tasks.findIndex(t => t.id === activeId);
-                        const newIndex = tasks.findIndex(t => t.id === overId); // This global index might be wrong if we only care about column
-
-                        // We need column specific indices
-                        const columnTasks = tasks.filter(t => t.status === activeTask.status).sort((a, b) => (a.position - b.position));
+                        const columnTasks = tasks.filter(t => t.columnId === activeTask.columnId).sort((a, b) => (a.position - b.position));
                         const oldColIndex = columnTasks.findIndex(t => t.id === activeId);
                         const newColIndex = columnTasks.findIndex(t => t.id === overId);
 
@@ -167,7 +163,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                                     key={col.id}
                                     column={col}
                                     tasks={tasks
-                                        .filter((task) => task.status === col.id)
+                                        .filter((task) => task.columnId === col.id)
                                         .sort((a, b) => (a.position - b.position))
                                     }
                                     createTask={() => handleCreateTask(col.id)}
@@ -190,7 +186,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                             {activeColumn && (
                                 <BoardColumn
                                     column={activeColumn}
-                                    tasks={tasks.filter((task) => task.status === activeColumn.id)}
+                                    tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
                                     createTask={() => { }}
                                     onTaskClick={() => { }}
                                 />

@@ -7,8 +7,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const navItems = [
-    { icon: LayoutDashboard, label: 'Board', href: '/dashboard' },
-    { icon: FolderKanban, label: 'Projects', href: '/projects' },
+    { icon: LayoutDashboard, label: 'Board', href: '/dashboard' }
 ];
 
 export function Sidebar() {

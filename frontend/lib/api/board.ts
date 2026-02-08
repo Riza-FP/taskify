@@ -61,8 +61,7 @@ export async function getBoardDetails(boardId: string): Promise<BoardData> {
             id: t.id.toString(),
             title: t.title,
             description: t.description || undefined,
-            status: list.id.toString(), // Status = Column ID
-            priority: (t.priority?.toLowerCase() as any) || 'medium',
+            columnId: list.id.toString(), // Map list_id to columnId
             tags: [],
             dueDate: t.deadline ? new Date(t.deadline).toISOString() : undefined,
             position: t.position

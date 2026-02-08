@@ -76,11 +76,6 @@ export function TaskDetailModal({ isOpen, onClose, task }: TaskDetailModalProps)
                                     placeholder="Task title"
                                 />
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-slate-500 px-1">
-                                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 font-medium text-xs">
-                                    in list <span className="underline decoration-slate-300 underline-offset-2">To Do</span>
-                                </span>
-                            </div>
                         </div>
 
                         <Separator />
@@ -100,22 +95,7 @@ export function TaskDetailModal({ isOpen, onClose, task }: TaskDetailModalProps)
                                 />
                             </div>
 
-                            {/* Activity */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-slate-700 font-semibold px-1">
-                                    <Clock size={18} />
-                                    <h3>Activity</h3>
-                                </div>
-                                <div className="flex gap-3 px-1">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarFallback className="bg-indigo-100 text-indigo-600 font-bold text-xs">JD</AvatarFallback>
-                                    </Avatar>
-                                    <Input
-                                        placeholder="Write a comment..."
-                                        className="bg-white shadow-none"
-                                    />
-                                </div>
-                            </div>
+
                         </div>
                     </div>
 
