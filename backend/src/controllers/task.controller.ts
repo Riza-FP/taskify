@@ -14,6 +14,7 @@ export const postTasks = async (req: Request, res: Response) => {
 
 export const putTasks = async (req: Request, res: Response) => {
     const supabase = (req as any).supabase;
+
     const { id } = req.params;
 
     const taskId = Number(id);
@@ -21,8 +22,6 @@ export const putTasks = async (req: Request, res: Response) => {
     const old = await getTaskById(supabase, taskId);
 
     const { list_id, rank, title, description, deadline } = req.body;
-
-    console.log("RANK FROM BDOY", rank, "LIST ID", list_id, "ID ", taskId);
 
     const request: UpdateTaskDTO = {
         id: old.id,
@@ -33,13 +32,7 @@ export const putTasks = async (req: Request, res: Response) => {
         deadline: deadline,
     };
 
-    console.log("RANK BEFORE REQUEST", rank);
-
-
     const task = await updateTask(supabase, request);
-
-    console.log("RANK AFTER DB", rank);
-
 
     res.status(StatusCodes.OK).json(success("Task updated successfully", task));
 }
