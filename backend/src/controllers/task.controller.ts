@@ -22,7 +22,7 @@ export const putTasks = async (req: Request, res: Response) => {
 
     const { list_id, rank, title, description, deadline } = req.body;
 
-    console.log("RANK FROM BDOY", rank);
+    console.log("RANK FROM BDOY", rank, "LIST ID", list_id, "ID ", taskId);
 
     const request: UpdateTaskDTO = {
         id: old.id,
