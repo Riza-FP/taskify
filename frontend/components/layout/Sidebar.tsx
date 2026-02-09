@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, LogOut, PlusSquare, FolderKanban } from 'lucide-react';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -53,45 +53,35 @@ export function Sidebar() {
                             {navItems.map((item) => {
                                 const isActive = pathname === item.href;
                                 return (
-                                    <Link
+                                    <div
                                         key={item.href}
-                                        href={item.href}
-                                        onClick={() => window.innerWidth < 768 && close()}
                                         className={cn(
-                                            'flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group',
+                                            'group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                                             isActive
                                                 ? 'bg-indigo-50/80 text-indigo-700 shadow-sm ring-1 ring-indigo-100'
                                                 : 'text-slate-500 hover:bg-slate-100/50 hover:text-slate-900'
                                         )}
                                     >
-                                        <item.icon
-                                            size={20}
-                                            className={cn(
-                                                'mr-3 transition-colors',
-                                                isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'
-                                            )}
-                                        />
-                                        {item.label}
-                                    </Link>
+                                        <Link
+                                            href={item.href}
+                                            onClick={() => window.innerWidth < 768 && close()}
+                                            className="flex flex-1 items-center"
+                                        >
+                                            <item.icon
+                                                size={20}
+                                                className={cn(
+                                                    'mr-3 transition-colors',
+                                                    isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500'
+                                                )}
+                                            />
+                                            {item.label}
+                                        </Link>
+                                    </div>
                                 );
                             })}
                         </nav>
 
-                        <div className="mt-8">
-                            <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                Workspaces
-                            </h3>
-                            <div className="mt-2 space-y-1">
-                                <button className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100/50 hover:text-gray-900">
-                                    <span className="mr-3 flex h-2 w-2 rounded-full bg-green-500"></span>
-                                    Marketing
-                                </button>
-                                <button className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100/50 hover:text-gray-900">
-                                    <span className="mr-3 flex h-2 w-2 rounded-full bg-blue-500"></span>
-                                    Engineering
-                                </button>
-                            </div>
-                        </div>
+
                     </div>
 
                     <div>

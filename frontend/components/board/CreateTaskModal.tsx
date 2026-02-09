@@ -34,6 +34,7 @@ export function CreateTaskModal({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -51,11 +52,13 @@ export function CreateTaskModal({
           rank,
           title,
           description,
+          deadline: deadline || undefined,
         }),
       ).unwrap();
       toast.success("Task created successfully");
       setTitle("");
       setDescription("");
+      setDeadline("");
       onClose();
     } catch (error) {
       toast.error("Failed to create task");
@@ -88,6 +91,16 @@ export function CreateTaskModal({
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+          <div className="grid gap-2">
+            <label htmlFor="deadline" className="text-sm font-medium text-slate-700">Due Date & Time</label>
+            <Input
+              id="deadline"
+              type="datetime-local"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full"
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={loading}>
@@ -101,3 +114,4 @@ export function CreateTaskModal({
     </Dialog>
   );
 }
+

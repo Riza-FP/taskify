@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -37,21 +37,37 @@ export function TaskDetailModal({
   const dispatch = useAppDispatch();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
 
   // Sync state when task changes
-  //   useEffect(() => {
-  //     if (task) {
-  //       setTitle(task.title);
-  //       setDescription(task.description || "");
-  //     }
-  //   }, [task]);
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description || "");
+
+      if (task.dueDate) {
+        // Convert UTC ISO string to Local format for datetime-local input (YYYY-MM-DDTHH:mm)
+        const d = new Date(task.dueDate);
+        const offset = d.getTimezoneOffset() * 60000;
+        const localISOTime = new Date(d.getTime() - offset).toISOString().slice(0, 16);
+        setDeadline(localISOTime);
+      } else {
+        setDeadline("");
+      }
+    }
+  }, [task]);
 
   const handleSave = () => {
     if (!task) return;
     dispatch(
       updateTaskAsync({
         id: task.id,
-        changes: { title, description },
+        changes: {
+          title,
+          description,
+          // Convert back to ISO string (UTC)
+          dueDate: deadline ? new Date(deadline).toISOString() : undefined
+        },
       }),
     );
     onClose();
@@ -81,14 +97,6 @@ export function TaskDetailModal({
                   className="text-2xl font-bold border-none shadow-none px-0 h-auto focus-visible:ring-0 placeholder:text-slate-400"
                   placeholder="Task title"
                 />
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-500 px-1">
-                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 font-medium text-xs">
-                  in list{" "}
-                  <span className="underline decoration-slate-300 underline-offset-2">
-                    To Do
-                  </span>
-                </span>
               </div>
             </div>
 
@@ -121,20 +129,15 @@ export function TaskDetailModal({
                   Add to card
                 </span>
                 <div className="flex flex-col gap-2 mt-2">
-                  <Button
-                    variant="outline"
-                    className="justify-start gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-100 shadow-sm h-9"
-                  >
-                    <Tag size={16} />
-                    Labels
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-100 shadow-sm h-9"
-                  >
-                    <Calendar size={16} />
-                    Due Date
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-slate-500">Due Date & Time</label>
+                    <Input
+                      type="datetime-local"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className="bg-white"
+                    />
+                  </div>
                 </div>
               </div>
 

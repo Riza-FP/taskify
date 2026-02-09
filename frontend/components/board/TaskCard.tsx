@@ -107,7 +107,17 @@ export function TaskCard({ task, onClick, index }: TaskCardProps) {
         {task.dueDate && (
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
             <Calendar size={12} />
-            <span>Oct 24</span>
+            <span>
+              {new Date(task.dueDate).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+              {", "}
+              {new Date(task.dueDate).toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
           </div>
         )}
       </div>

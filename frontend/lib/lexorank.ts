@@ -57,6 +57,7 @@ export class Lexorank {
      * 
      */
     insert(p: string | null, n: string | null): [string, boolean] {
+        console.log(p,n)
 
         if (p === '' || !p) {
             p = this.string(this.MIN_CHAR);

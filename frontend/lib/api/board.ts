@@ -33,11 +33,45 @@ export async function createBoard(title: string, description?: string) {
     return response.data;
 }
 
+// Update a board
+export async function updateBoard(id: string, title?: string, description?: string) {
+    const response = await apiFetch(`/boards/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title, description }),
+    });
+    return response.data;
+}
+
+// Delete a board
+export async function deleteBoard(id: string) {
+    const response = await apiFetch(`/boards/${id}`, {
+        method: "DELETE",
+    });
+    return response.data;
+}
+
 // Create a new list (column)
 export async function createList(boardId: string, title: string, position: number) {
     const response = await apiFetch("/lists", {
         method: "POST",
         body: JSON.stringify({ board_id: boardId, title, position }),
+    });
+    return response.data;
+}
+
+// Update a list
+export async function updateList(id: number, title?: string, position?: number, boardId?: number) {
+    const response = await apiFetch(`/lists/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ title, position, board_id: boardId }),
+    });
+    return response.data;
+}
+
+// Delete a list
+export async function deleteList(id: number) {
+    const response = await apiFetch(`/lists/${id}`, {
+        method: "DELETE",
     });
     return response.data;
 }
