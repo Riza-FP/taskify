@@ -41,6 +41,38 @@ export type Database = {
         }
         Relationships: []
       }
+      labels: {
+        Row: {
+          color: string
+          created_at: string
+          id: number
+          task_id: number
+          title: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: number
+          task_id: number
+          title: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: number
+          task_id?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labels_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lists: {
         Row: {
           board_id: number
