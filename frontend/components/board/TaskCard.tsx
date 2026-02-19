@@ -61,29 +61,17 @@ export function TaskCard({ task, onClick, index }: TaskCardProps) {
       <div className="flex items-start justify-between">
         <div className="space-y-2 w-full">
           <div className="flex flex-wrap gap-1.5">
-            {task.tags.map((tag) => {
-              let colors = "bg-slate-100 text-slate-600";
-              if (tag === "High" || tag === "Urgent")
-                colors = "bg-rose-50 text-rose-600 ring-1 ring-rose-200";
-              if (tag === "Medium")
-                colors =
-                  "bg-amber-50 text-amber-600 ring-1 ring-amber-200 ring-offset-0";
-              if (tag === "Low")
-                colors =
-                  "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200";
-
-              return (
-                <span
-                  key={tag}
-                  className={cn(
-                    "px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide",
-                    colors,
-                  )}
-                >
-                  {tag}
-                </span>
-              );
-            })}
+            {task.labels?.map((label) => (
+              <span
+                key={label.id}
+                className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide",
+                  label.color,
+                )}
+              >
+                {label.name}
+              </span>
+            ))}
           </div>
 
           <div className="flex items-start justify-between gap-2">

@@ -97,7 +97,7 @@ export async function getBoardDetails(boardId: string): Promise<BoardData> {
             list_id: list.id,
             description: t.description || undefined,
             columnId: list.id, // Map list_id to columnId
-            tags: [],
+            labels: [],
             dueDate: t.deadline ? new Date(t.deadline).toISOString() : undefined,
             rank: t.rank
         }));

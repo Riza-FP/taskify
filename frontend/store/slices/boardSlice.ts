@@ -131,7 +131,7 @@ export const boardSlice = createSlice({
                     columnId: apiTask.list_id,
                     title: apiTask.title,
                     description: apiTask.description,
-                    tags: [],
+                    labels: [],
                     dueDate: apiTask.deadline ? new Date(apiTask.deadline).toISOString() : undefined,
                     rank: apiTask.rank
                 };

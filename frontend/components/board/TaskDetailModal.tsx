@@ -29,6 +29,11 @@ interface TaskDetailModalProps {
   task: Task | null;
 }
 
+import { LabelPicker } from "./LabelPicker";
+import { Label } from "@/lib/types";
+
+// ... existing imports
+
 export function TaskDetailModal({
   isOpen,
   onClose,
@@ -38,12 +43,14 @@ export function TaskDetailModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [labels, setLabels] = useState<Label[]>([]);
 
   // Sync state when task changes
   useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.description || "");
+      setLabels(task.labels || []);
 
       if (task.dueDate) {
         // Convert UTC ISO string to Local format for datetime-local input (YYYY-MM-DDTHH:mm)
@@ -65,6 +72,7 @@ export function TaskDetailModal({
         changes: {
           title,
           description,
+          labels,
           // Convert back to ISO string (UTC)
           dueDate: deadline ? new Date(deadline).toISOString() : undefined
         },
@@ -98,6 +106,20 @@ export function TaskDetailModal({
                   placeholder="Task title"
                 />
               </div>
+
+              {/* Labels Display (Main Area) */}
+              {labels.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {labels.map((label) => (
+                    <span
+                      key={label.id}
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${label.color}`}
+                    >
+                      {label.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <Separator />
@@ -116,8 +138,6 @@ export function TaskDetailModal({
                   className="min-h-37.5 resize-none text-slate-700 bg-slate-50/50 border-slate-200 focus:bg-white transition-all shadow-none"
                 />
               </div>
-
-
             </div>
           </div>
 
@@ -128,7 +148,13 @@ export function TaskDetailModal({
                 <span className="text-xs font-semibold uppercase text-slate-400 tracking-wider">
                   Add to card
                 </span>
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-col gap-3 mt-2">
+                  {/* Label Picker */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-medium text-slate-500">Labels</label>
+                    <LabelPicker selectedLabels={labels} onChange={setLabels} />
+                  </div>
+
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-slate-500">Due Date & Time</label>
                     <Input

@@ -10,8 +10,8 @@ export class Lexorank {
     private readonly MAX_CHAR: number;
 
     constructor() {
-    this.MIN_CHAR = this.byte("0");
-    this.MAX_CHAR = this.byte("z");
+        this.MIN_CHAR = this.byte("0");
+        this.MAX_CHAR = this.byte("z");
     }
 
     private byte(s: string): number {
@@ -57,7 +57,7 @@ export class Lexorank {
      * 
      */
     insert(p: string | null, n: string | null): [string, boolean] {
-        console.log(p,n)
+        console.log(p, n)
 
         if (p === '' || !p) {
             p = this.string(this.MIN_CHAR);
@@ -65,7 +65,7 @@ export class Lexorank {
         if (n === '' || !n) {
             n = this.string(this.MAX_CHAR);
         }
-        
+
         let rank = "";
         let cursor = 0;
 
@@ -77,7 +77,7 @@ export class Lexorank {
                 rank += this.string(prev_c);
                 cursor++;
                 continue;
-            } 
+            }
 
             const mid_c = this.mid(prev_c, next_c);
 
@@ -107,4 +107,4 @@ export class Lexorank {
 
 // utility function for sorting
 export const compareLexorank = (a: string, b: string) =>
-  a < b ? -1 : a > b ? 1 : 0;
+    a < b ? -1 : a > b ? 1 : 0;

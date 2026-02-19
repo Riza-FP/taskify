@@ -1,12 +1,18 @@
+export interface Label {
+  id: string;
+  name: string;
+  color: string; // hex or tailwind class
+}
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  tags: string[];
+  labels: Label[];
   dueDate?: string;
   assignee?: string; // URL to avatar or name
   rank: string; // use lexorank algo
-  columnId: number; 
+  columnId: number;
 }
 
 export interface Column {
