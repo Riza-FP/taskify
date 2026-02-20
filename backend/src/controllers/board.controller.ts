@@ -3,6 +3,7 @@ import { createBoard, deleteBoard, getAllBoards, getBoardById, updateBoard } fro
 import { StatusCodes } from "http-status-codes";
 import { success } from "../utils/response.js";
 import type { UpdateBoardDTO } from "../types/board.type.js";
+import type { SortFilter } from "../types/filter.type.js";
 
 
 export const postBoards = async (req: Request, res: Response) => {
@@ -43,7 +44,18 @@ export const getBoardsById = async (req: Request, res: Response) => {
         ? req.query.labels.split(',').map(Number).filter(n => !isNaN(n))
         : [];
 
-    const board = await getBoardById(client, Number(id), title, labelIds);
+
+    const sortQuery = typeof req.query.sort === "string" ? req.query.sort : undefined;
+    let sort: SortFilter | undefined = undefined;
+
+    if (sortQuery) {
+        sort = {
+            column: sortQuery ?? "",
+            ascending: true,
+        }
+    }
+
+    const board = await getBoardById(client, Number(id), title, labelIds, sort);
 
     res.status(StatusCodes.OK).json(success("Board fetched successfully", board));
 }
