@@ -102,6 +102,7 @@ export type Database = {
           created_at: string
           id: number
           is_seen: boolean
+          task_id: number
           test: string
           user_id: string
         }
@@ -109,6 +110,7 @@ export type Database = {
           created_at?: string
           id?: number
           is_seen?: boolean
+          task_id: number
           test: string
           user_id?: string
         }
@@ -116,10 +118,19 @@ export type Database = {
           created_at?: string
           id?: number
           is_seen?: boolean
+          task_id?: number
           test?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: true
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_labels: {
         Row: {
@@ -197,6 +208,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: number
+          notify_before_days: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          notify_before_days?: number
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          notify_before_days?: number
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
