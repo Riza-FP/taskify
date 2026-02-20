@@ -103,7 +103,7 @@ export type Database = {
           id: number
           is_seen: boolean
           task_id: number
-          test: string
+          text: string
           user_id: string
         }
         Insert: {
@@ -111,7 +111,7 @@ export type Database = {
           id?: number
           is_seen?: boolean
           task_id: number
-          test: string
+          text: string
           user_id?: string
         }
         Update: {
@@ -119,7 +119,7 @@ export type Database = {
           id?: number
           is_seen?: boolean
           task_id?: number
-          test?: string
+          text?: string
           user_id?: string
         }
         Relationships: [
