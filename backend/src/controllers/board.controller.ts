@@ -5,8 +5,11 @@ import { success } from "../utils/response.js";
 import type { UpdateBoardDTO } from "../types/board.type.js";
 import type { SortFilter } from "../types/filter.type.js";
 
-
 export const postBoards = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Board']
+    // #swagger.summary = 'Create new Kanban Board'
+
+
     const { id } = (req as any).user;
     const { title, description } = req.body;
     const supabase = (req as any).supabase;
@@ -26,6 +29,9 @@ export const postBoards = async (req: Request, res: Response) => {
 
 
 export const getBoards = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Board']
+    // #swagger.summary = 'Get all boards that the logged in user have'
+
     const client = (req as any).supabase;
     const boards = await getAllBoards(client);
 
@@ -34,6 +40,9 @@ export const getBoards = async (req: Request, res: Response) => {
 
 
 export const getBoardsById = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Board']
+    // #swagger.summary = 'Get a board by its Id, also loads all its content'
+
     const client = (req as any).supabase;
     const { id } = req.params;
 
@@ -62,6 +71,9 @@ export const getBoardsById = async (req: Request, res: Response) => {
 
 
 export const putBoards = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Board']
+    // #swagger.summary = 'Update board metadata'
+
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const boardId = Number(id);
@@ -84,6 +96,8 @@ export const putBoards = async (req: Request, res: Response) => {
 
 
 export const deleteBoards = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Board']
+    // #swagger.summary = 'Delete a board'
 
     const supabase = (req as any).supabase;
     const { id } = req.params;

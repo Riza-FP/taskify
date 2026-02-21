@@ -18,7 +18,8 @@
     "lint": "npx eslint .",
     "purge:uploads": "rm -rf src/public/uploads",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --coverage"
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll --coverage",
+    "swagger": "tsx swagger.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -62,6 +63,7 @@
     "prisma": "^7.2.0",
     "supabase": "^2.75.0",
     "supertest": "^7.2.2",
+    "swagger-autogen": "^2.23.7",
     "ts-jest": "^29.4.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

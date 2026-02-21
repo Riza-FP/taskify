@@ -6,6 +6,8 @@ import type { UpdateTaskDTO } from "../types/task.type.js";
 import type { SortFilter } from "../types/filter.type.js";
 
 export const postTasks = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Task']
+    // #swagger.summary = 'Create new task'
     const supabase = (req as any).supabase;
 
     const task = await createTask(supabase, req.body);
@@ -14,6 +16,8 @@ export const postTasks = async (req: Request, res: Response) => {
 }
 
 export const putTasks = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Task']
+    // #swagger.summary = 'Update a task'
     const supabase = (req as any).supabase;
 
     const { id } = req.params;
@@ -40,7 +44,8 @@ export const putTasks = async (req: Request, res: Response) => {
 
 
 export const deleteTasks = async (req: Request, res: Response) => {
-
+    // #swagger.tags = ['Task']
+    // #swagger.summary = 'Delete task'
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const taskId = Number(id);
@@ -55,6 +60,8 @@ export const deleteTasks = async (req: Request, res: Response) => {
 
 
 export const getTasksForList = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Task']
+    // #swagger.summary = 'Get tasks for a list. Optional sortings available'
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const listId = Number(id);
@@ -74,12 +81,3 @@ export const getTasksForList = async (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json(success("Tasks fetched successfully", tasks));
 }
 
-
-export const getTasksForBoard = async (req: Request, res: Response) => {
-    const supabase = (req as any).supabase;
-    const { id } = req.params;
-    const boardId = Number(id);
-
-    // TODO: filter query
-    const labels = req.query;
-}

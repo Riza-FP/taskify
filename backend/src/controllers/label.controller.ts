@@ -5,6 +5,8 @@ import { createLabel, deleteLabel, getAllLabel, getLabelById, updateLabel } from
 import { createLabelToTask, deleteLabelToTask, selectTaskLabel } from "../services/task-label.service.js";
 
 export const getLabels = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Label']
+    // #swagger.summary = 'Get all labels, optional title filter'
     const supabase = (req as any).supabase;
     const query = req.query.search ?? null;
 
@@ -13,6 +15,9 @@ export const getLabels = async (req: Request, res: Response) => {
 }
 
 export const deleteLabels = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Label']
+    // #swagger.summary = 'Delete a label by ID'
+
     const supabase = (req as any).supabase;
 
     const { id } = req.params;
@@ -23,6 +28,9 @@ export const deleteLabels = async (req: Request, res: Response) => {
 }
 
 export const putLabels = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Label']
+    // #swagger.summary = 'Update a label'
+
     const { title, color } = req.body;
     const supabase = (req as any).supabase;
 
@@ -38,6 +46,8 @@ export const putLabels = async (req: Request, res: Response) => {
 }
 
 export const postLabels = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Label']
+    // #swagger.summary = 'Create new label, needs to assign to a task'
     const { title, color, taskId } = req.body;
     const supabase = (req as any).supabase;
 
@@ -47,6 +57,8 @@ export const postLabels = async (req: Request, res: Response) => {
 }
 
 export const toggleLabels = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Label']
+    // #swagger.summary = 'Assign or unassign label to a task'
     const { taskId, labelId } = req.body;
     const supabase = (req as any).supabase;
 
