@@ -76,45 +76,50 @@ export async function deleteList(id: number) {
     return response.data;
 }
 
-// Fetch full board details including lists and tasks
-export async function getBoardDetails(boardId: string): Promise<BoardData> {
-    // 1. Fetch Lists
-    const listsResponse = await apiFetch(`/boards/${boardId}/lists`);
-    const lists: RawList[] = listsResponse.data || [];
+export interface BoardFetchFilters {
+    search?: string;
+    labels?: number[];     // comma-sep label IDs → ?labels=1,2,3
+    sort?: "title" | "deadline"; // omit for default rank order
+    ascending?: boolean;
+}
 
-    const columns: Column[] = [];
-    let allTasks: Task[] = [];
+// Fetch full board details including lists, tasks and labels — single call
+export async function getBoardDetails(boardId: string, filters: BoardFetchFilters = {}): Promise<BoardData> {
+    const params = new URLSearchParams();
+    if (filters.search?.trim()) params.set("search", filters.search.trim());
+    if (filters.labels?.length) params.set("labels", filters.labels.join(","));
+    if (filters.sort) params.set("sort", filters.sort);
+    if (filters.ascending !== undefined) params.set("ascending", String(filters.ascending));
 
-    // 2. For each list, fetch its tasks
-    await Promise.all(lists.map(async (list) => {
-        const tasksResponse = await apiFetch(`/lists/${list.id}/tasks`);
-        const tasks: RawTask[] = tasksResponse.data || [];
+    const qs = params.toString();
+    const response = await apiFetch(`/boards/${boardId}${qs ? `?${qs}` : ""}`);
+    const board = response.data;
 
-        // Map backend task to frontend Task type
-        const mappedTasks: Task[] = tasks.map(t => ({
-            id: t.id.toString(),
-            title: t.title,
-            list_id: list.id,
-            description: t.description || undefined,
-            columnId: list.id, // Map list_id to columnId
-            labels: [],
-            dueDate: t.deadline ? new Date(t.deadline).toISOString() : undefined,
-            rank: t.rank
-        }));
+    const rawLists: any[] = board.lists || [];
 
-        allTasks = [...allTasks, ...mappedTasks];
-
-        columns.push({
+    const columns: Column[] = rawLists
+        .map((list: any) => ({
             id: list.id.toString(),
             title: list.title,
-            idx: list.position || 0
-        });
-    }));
+            idx: list.position ?? list.rank ?? 0,
+        }))
+        .sort((a, b) => a.idx - b.idx);
 
-    const sortedColumns = columns.sort((a, b) => a.idx - b.idx);
+    const allTasks: Task[] = rawLists.flatMap((list: any) =>
+        (list.tasks || []).map((t: any) => ({
+            id: t.id.toString(),
+            title: t.title,
+            description: t.description || undefined,
+            columnId: list.id,
+            labels: (t.labels || []).map((l: any) => ({
+                id: l.id.toString(),
+                name: l.title,   // backend uses "title", frontend uses "name"
+                color: l.color,
+            })),
+            dueDate: t.deadline ? new Date(t.deadline).toISOString() : undefined,
+            rank: t.rank ?? t.position,
+        }))
+    );
 
-    return {
-        columns: sortedColumns,
-        tasks: allTasks
-    };
+    return { columns, tasks: allTasks };
 }

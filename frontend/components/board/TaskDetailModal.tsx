@@ -113,7 +113,8 @@ export function TaskDetailModal({
                   {labels.map((label) => (
                     <span
                       key={label.id}
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${label.color}`}
+                      className="px-2.5 py-0.5 rounded-full text-xs font-semibold text-white"
+                      style={{ backgroundColor: label.color }}
                     >
                       {label.name}
                     </span>
@@ -152,7 +153,7 @@ export function TaskDetailModal({
                   {/* Label Picker */}
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-medium text-slate-500">Labels</label>
-                    <LabelPicker selectedLabels={labels} onChange={setLabels} />
+                    <LabelPicker selectedLabels={labels} onChange={setLabels} taskId={task?.id} />
                   </div>
 
                   <div className="flex flex-col gap-1">
@@ -176,7 +177,7 @@ export function TaskDetailModal({
                 <div className="flex flex-col gap-2 mt-2">
                   <Button
                     onClick={handleSave}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md shadow-indigo-200"
+                    className="w-full bg-gray-900 hover:bg-black text-white font-semibold shadow-md shadow-gray-500"
                   >
                     Save Changes
                   </Button>

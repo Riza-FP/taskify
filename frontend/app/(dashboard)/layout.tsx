@@ -2,6 +2,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Navbar } from '@/components/layout/Navbar';
 import { AuthGuard } from '@/components/providers/AuthGuard';
 import { SidebarProvider } from '@/components/providers/SidebarProvider';
+import { NotificationsListener } from '@/components/layout/NotificationsListener';
 
 export default function DashboardLayout({
     children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
     return (
         <AuthGuard>
             <SidebarProvider>
+                <NotificationsListener />
                 <div className="flex min-h-screen bg-slate-50/50">
                     <div className="fixed inset-0 z-0 pointer-events-none">
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-fuchsia-50 opacity-80" />

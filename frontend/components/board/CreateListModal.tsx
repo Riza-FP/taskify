@@ -42,7 +42,7 @@ export function CreateListModal({
       setTitle("");
       onClose();
       // Refresh board data to show new list
-      dispatch(fetchBoardData(boardId));
+      dispatch(fetchBoardData({ boardId }));
     } catch (error) {
       toast.error("Failed to create list");
       console.error(error);

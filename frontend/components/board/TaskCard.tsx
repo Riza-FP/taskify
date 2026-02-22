@@ -64,10 +64,8 @@ export function TaskCard({ task, onClick, index }: TaskCardProps) {
             {task.labels?.map((label) => (
               <span
                 key={label.id}
-                className={cn(
-                  "px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide",
-                  label.color,
-                )}
+                className="px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide text-white"
+                style={{ backgroundColor: label.color }}
               >
                 {label.name}
               </span>

@@ -18,7 +18,7 @@ export async function createTask(listId: number, rank: string, title: string, de
 export async function updateTask(taskId: string, updates: Partial<Task>) {
     // Map frontend dueDate to backend deadline
     // Map frontend fields to backend fields
-    const { dueDate, columnId, ...rest } = updates;
+    const { dueDate, columnId, labels, ...rest } = updates;
     const payload = {
         ...rest,
         ...("dueDate" in updates ? { deadline: dueDate } : {}),

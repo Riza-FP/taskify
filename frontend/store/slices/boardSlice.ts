@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { BoardData, Task } from '@/lib/types';
-import { getBoardDetails } from '@/lib/api/board';
+import { getBoardDetails, BoardFetchFilters } from '@/lib/api/board';
 import { createTask as createTaskAPI, updateTask as updateTaskAPI, deleteTask as deleteTaskAPI } from '@/lib/api/task';
 import { RootState } from '..';
 import { compareLexorank } from '@/lib/lexorank';
@@ -20,8 +20,8 @@ const initialState: BoardState = {
 
 export const fetchBoardData = createAsyncThunk(
     'board/fetchBoardData',
-    async (boardId: string) => {
-        const data = await getBoardDetails(boardId);
+    async ({ boardId, filters }: { boardId: string; filters?: BoardFetchFilters }) => {
+        const data = await getBoardDetails(boardId, filters ?? {});
         return data;
     }
 );

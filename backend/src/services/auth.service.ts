@@ -11,6 +11,14 @@ export async function register(req: RegisterUserSchemaType): Promise<AuthRespons
 
     if (error) throw error;
 
+    // Create default notification settings row for new user
+    if (data.user) {
+        await supabase.from("user_settings").insert({
+            user_id: data.user.id,
+            notify_before_days: 1,
+        });
+    }
+
     return data;
 }
 

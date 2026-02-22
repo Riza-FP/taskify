@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Check, ChevronsUpDown, Plus, X, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,78 +21,123 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/lib/types";
 import { Input } from "@/components/ui/input";
+import { getLabels, createLabel, toggleLabel } from "@/lib/api/labels";
+import { toast } from "sonner";
 
-// Preset colors for labels
+// Preset colors — stored as hex in the DB, rendered via inline style
 const PRESET_COLORS = [
-    { name: "Red", value: "bg-red-500 hover:bg-red-600 text-white" },
-    { name: "Orange", value: "bg-orange-500 hover:bg-orange-600 text-white" },
-    { name: "Amber", value: "bg-amber-500 hover:bg-amber-600 text-white" },
-    { name: "Yellow", value: "bg-yellow-500 hover:bg-yellow-600 text-white" },
-    { name: "Lime", value: "bg-lime-500 hover:bg-lime-600 text-white" },
-    { name: "Green", value: "bg-green-500 hover:bg-green-600 text-white" },
-    { name: "Emerald", value: "bg-emerald-500 hover:bg-emerald-600 text-white" },
-    { name: "Teal", value: "bg-teal-500 hover:bg-teal-600 text-white" },
-    { name: "Cyan", value: "bg-cyan-500 hover:bg-cyan-600 text-white" },
-    { name: "Sky", value: "bg-sky-500 hover:bg-sky-600 text-white" },
-    { name: "Blue", value: "bg-blue-500 hover:bg-blue-600 text-white" },
-    { name: "Indigo", value: "bg-indigo-500 hover:bg-indigo-600 text-white" },
-    { name: "Violet", value: "bg-violet-500 hover:bg-violet-600 text-white" },
-    { name: "Purple", value: "bg-purple-500 hover:bg-purple-600 text-white" },
-    { name: "Fuchsia", value: "bg-fuchsia-500 hover:bg-fuchsia-600 text-white" },
-    { name: "Pink", value: "bg-pink-500 hover:bg-pink-600 text-white" },
-    { name: "Rose", value: "bg-rose-500 hover:bg-rose-600 text-white" },
+    { name: "Red", hex: "#ef4444" },
+    { name: "Orange", hex: "#f97316" },
+    { name: "Amber", hex: "#f59e0b" },
+    { name: "Yellow", hex: "#eab308" },
+    { name: "Lime", hex: "#84cc16" },
+    { name: "Green", hex: "#22c55e" },
+    { name: "Emerald", hex: "#10b981" },
+    { name: "Teal", hex: "#14b8a6" },
+    { name: "Cyan", hex: "#06b6d4" },
+    { name: "Sky", hex: "#0ea5e9" },
+    { name: "Blue", hex: "#3b82f6" },
+    { name: "Indigo", hex: "#6366f1" },
+    { name: "Violet", hex: "#8b5cf6" },
+    { name: "Purple", hex: "#a855f7" },
+    { name: "Fuchsia", hex: "#d946ef" },
+    { name: "Pink", hex: "#ec4899" },
+    { name: "Rose", hex: "#f43f5e" },
 ];
 
 interface LabelPickerProps {
     selectedLabels: Label[];
     onChange: (labels: Label[]) => void;
+    /** If provided, toggle calls will also persist to the API (task context). If absent, filter-only mode. */
+    taskId?: string;
 }
 
-export function LabelPicker({ selectedLabels, onChange }: LabelPickerProps) {
+export function LabelPicker({ selectedLabels, onChange, taskId }: LabelPickerProps) {
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
+    const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+    const [loadingLabels, setLoadingLabels] = useState(false);
+    const [togglingId, setTogglingId] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-    // Mock "All Labels" - In a real app, this would come from the store/database
-    // For now, we'll just keep a local list or derived list. 
-    // Ideally, this should be passed in as a prop "availableLabels".
-    // Let's assume we maintain a list of *all* labels seen so far? 
-    // Or just mock some defaults.
-    const [availableLabels, setAvailableLabels] = useState<Label[]>([
-        { id: "l1", name: "High Priority", color: "bg-red-500 hover:bg-red-600 text-white" },
-        { id: "l2", name: "Bug", color: "bg-rose-500 hover:bg-rose-600 text-white" },
-        { id: "l3", name: "Feature", color: "bg-blue-500 hover:bg-blue-600 text-white" },
-        { id: "l4", name: "Design", color: "bg-pink-500 hover:bg-pink-600 text-white" },
-    ]);
+    // Load labels from API when popover opens
+    const loadLabels = useCallback(async () => {
+        setLoadingLabels(true);
+        try {
+            const data = await getLabels();
+            setAvailableLabels(data);
+        } catch {
+            toast.error("Failed to load labels");
+        } finally {
+            setLoadingLabels(false);
+        }
+    }, []);
 
-    const toggleLabel = (label: Label) => {
+    useEffect(() => {
+        if (open) loadLabels();
+    }, [open, loadLabels]);
+
+    const toggleLabelOnTask = async (label: Label) => {
         const isSelected = selectedLabels.some((l) => l.id === label.id);
+
+        // Optimistic update
         if (isSelected) {
             onChange(selectedLabels.filter((l) => l.id !== label.id));
         } else {
             onChange([...selectedLabels, label]);
         }
+
+        // If a taskId is provided (task detail context), persist to API
+        if (taskId) {
+            setTogglingId(label.id);
+            try {
+                await toggleLabel(taskId, label.id);
+            } catch {
+                // Revert on failure
+                toast.error("Failed to update label");
+                if (isSelected) {
+                    onChange([...selectedLabels]);
+                } else {
+                    onChange(selectedLabels.filter((l) => l.id !== label.id));
+                }
+            } finally {
+                setTogglingId(null);
+            }
+        }
     };
 
-    const createLabel = () => {
+    const handleCreate = async () => {
         if (!newLabelName.trim()) return;
 
-        const newLabel: Label = {
-            id: `new-${Date.now()}`,
-            name: newLabelName,
-            color: selectedColor.value,
-        };
+        // Creating a label requires a taskId on the backend (it links them together)
+        if (!taskId) {
+            toast.error("Open a task to create a new label");
+            return;
+        }
 
-        setAvailableLabels([...availableLabels, newLabel]);
-        onChange([...selectedLabels, newLabel]);
-
-        // Reset state
-        setNewLabelName("");
-        setIsCreating(false);
-        setSearchValue("");
+        setIsSaving(true);
+        try {
+            const newLabel = await createLabel(newLabelName.trim(), selectedColor.hex, taskId);
+            setAvailableLabels((prev) => [...prev, newLabel]);
+            onChange([...selectedLabels, newLabel]);
+            setNewLabelName("");
+            setIsCreating(false);
+            setSearchValue("");
+        } catch {
+            toast.error("Failed to create label");
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    const filteredLabels = searchValue.trim()
+        ? availableLabels.filter((l) =>
+            l.name.toLowerCase().includes(searchValue.toLowerCase())
+        )
+        : availableLabels;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -104,12 +149,12 @@ export function LabelPicker({ selectedLabels, onChange }: LabelPickerProps) {
                     className="w-full justify-between"
                 >
                     {selectedLabels.length > 0
-                        ? `${selectedLabels.length} selected`
+                        ? `${selectedLabels.length} label${selectedLabels.length > 1 ? "s" : ""} selected`
                         : "Select labels..."}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
+            <PopoverContent className="w-[220px] p-0" align="start">
                 <Command>
                     {!isCreating ? (
                         <>
@@ -119,57 +164,85 @@ export function LabelPicker({ selectedLabels, onChange }: LabelPickerProps) {
                                 onValueChange={setSearchValue}
                             />
                             <CommandList>
-                                <CommandEmpty>
-                                    <div className="p-2 text-sm text-center text-muted-foreground">
-                                        No label found.
+                                {loadingLabels ? (
+                                    <div className="flex items-center justify-center p-4">
+                                        <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full text-xs h-8 mt-1"
-                                        onClick={() => {
-                                            setNewLabelName(searchValue);
-                                            setIsCreating(true);
-                                        }}
-                                    >
-                                        <Plus className="mr-2 h-3 w-3" />
-                                        Create "{searchValue}"
-                                    </Button>
-                                </CommandEmpty>
-                                <CommandGroup heading="Labels">
-                                    {availableLabels.map((label) => {
-                                        const isSelected = selectedLabels.some((l) => l.id === label.id);
-                                        return (
-                                            <CommandItem
-                                                key={label.id}
-                                                value={label.name}
-                                                onSelect={() => toggleLabel(label)}
-                                            >
-                                                <Check
-                                                    className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        isSelected ? "opacity-100" : "opacity-0"
-                                                    )}
-                                                />
-                                                <div className={cn("w-3 h-3 rounded-full mr-2", label.color.split(' ')[0])} />
-                                                {label.name}
-                                            </CommandItem>
-                                        );
-                                    })}
-                                </CommandGroup>
-                                <CommandSeparator />
-                                <CommandGroup>
-                                    <CommandItem onSelect={() => setIsCreating(true)}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Create new label
-                                    </CommandItem>
-                                </CommandGroup>
+                                ) : (
+                                    <>
+                                        <CommandEmpty>
+                                            <div className="p-2 text-sm text-center text-muted-foreground">
+                                                No label found.
+                                            </div>
+                                            {taskId && (
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-full text-xs h-8 mt-1"
+                                                    onClick={() => {
+                                                        setNewLabelName(searchValue);
+                                                        setIsCreating(true);
+                                                    }}
+                                                >
+                                                    <Plus className="mr-2 h-3 w-3" />
+                                                    Create &quot;{searchValue}&quot;
+                                                </Button>
+                                            )}
+                                        </CommandEmpty>
+                                        <CommandGroup heading="Labels">
+                                            {filteredLabels.map((label) => {
+                                                const isSelected = selectedLabels.some((l) => l.id === label.id);
+                                                const isToggling = togglingId === label.id;
+                                                return (
+                                                    <CommandItem
+                                                        key={label.id}
+                                                        value={label.name}
+                                                        onSelect={() => toggleLabelOnTask(label)}
+                                                        disabled={isToggling}
+                                                    >
+                                                        {isToggling ? (
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    isSelected ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                        )}
+                                                        <div
+                                                            className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+                                                            style={{ backgroundColor: label.color }}
+                                                        />
+                                                        {label.name}
+                                                    </CommandItem>
+                                                );
+                                            })}
+                                        </CommandGroup>
+                                        {taskId && (
+                                            <>
+                                                <CommandSeparator />
+                                                <CommandGroup>
+                                                    <CommandItem onSelect={() => setIsCreating(true)}>
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Create new label
+                                                    </CommandItem>
+                                                </CommandGroup>
+                                            </>
+                                        )}
+                                    </>
+                                )}
                             </CommandList>
                         </>
                     ) : (
                         <div className="p-2 space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium">New Label</span>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsCreating(false)}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => setIsCreating(false)}
+                                >
                                     <X className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -181,6 +254,7 @@ export function LabelPicker({ selectedLabels, onChange }: LabelPickerProps) {
                                     onChange={(e) => setNewLabelName(e.target.value)}
                                     className="h-8 text-sm"
                                     autoFocus
+                                    onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                                 />
 
                                 <div className="grid grid-cols-5 gap-1">
@@ -188,23 +262,40 @@ export function LabelPicker({ selectedLabels, onChange }: LabelPickerProps) {
                                         <button
                                             key={color.name}
                                             className={cn(
-                                                "w-6 h-6 rounded-md transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-slate-400",
-                                                color.value.split(' ')[0],
-                                                selectedColor.name === color.name ? "ring-2 ring-offset-1 ring-slate-900" : ""
+                                                "w-6 h-6 rounded-md transition-all hover:scale-110 focus:outline-none",
+                                                selectedColor.name === color.name
+                                                    ? "ring-2 ring-offset-1 ring-slate-900"
+                                                    : ""
                                             )}
+                                            style={{ backgroundColor: color.hex }}
                                             onClick={() => setSelectedColor(color)}
                                             title={color.name}
                                         />
                                     ))}
                                 </div>
 
+                                {/* Preview */}
+                                {newLabelName.trim() && (
+                                    <div className="flex items-center gap-2 p-1">
+                                        <span
+                                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                            style={{ backgroundColor: selectedColor.hex }}
+                                        >
+                                            {newLabelName}
+                                        </span>
+                                    </div>
+                                )}
+
                                 <Button
                                     size="sm"
                                     className="w-full"
-                                    disabled={!newLabelName.trim()}
-                                    onClick={createLabel}
+                                    disabled={!newLabelName.trim() || isSaving}
+                                    onClick={handleCreate}
                                 >
-                                    Create
+                                    {isSaving ? (
+                                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                    ) : null}
+                                    {isSaving ? "Creating..." : "Create"}
                                 </Button>
                             </div>
                         </div>

@@ -6,7 +6,6 @@ import { useAppDispatch } from "@/store/hooks";
 import { fetchBoardData } from "@/store/slices/boardSlice";
 import { KanbanBoard } from "@/components/board/KanbanBoard";
 import { BoardHeader } from "@/components/board/BoardHeader";
-import { getBoardDetails } from "@/lib/api/board";
 
 export default function BoardPage() {
     const params = useParams();
@@ -24,7 +23,7 @@ export default function BoardPage() {
 
         const loadBoard = async () => {
             try {
-                await dispatch(fetchBoardData(boardId)).unwrap();
+                await dispatch(fetchBoardData({ boardId })).unwrap();
 
                 // TODO: Optimize this by having a specific getBoard endpoint or storing Board metadata in Redux
                 const response = await import("@/lib/api/board").then(m => m.getBoards());

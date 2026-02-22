@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -21,9 +21,10 @@ import { TaskCard } from "./TaskCard";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { CreateListModal } from "./CreateListModal";
+import { BoardFilter, FilterState } from "./BoardFilter";
 import { Column, Task } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { moveTaskAsync } from "@/store/slices/boardSlice";
+import { fetchBoardData, moveTaskAsync } from "@/store/slices/boardSlice";
 import { Plus } from "lucide-react";
 import { compareLexorank, Lexorank } from "@/lib/lexorank";
 
@@ -31,11 +32,7 @@ interface KanbanBoardProps {
   boardId: string;
 }
 
-import { BoardFilter, FilterState } from "./BoardFilter";
-
 const lexorank = new Lexorank();
-
-// ... existing imports
 
 export function KanbanBoard({ boardId }: KanbanBoardProps) {
   const dispatch = useAppDispatch();
@@ -47,73 +44,56 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
   const [createListModalOpen, setCreateListModalOpen] = useState(false);
   const [createColumnId, setCreateColumnId] = useState<number | null>(null);
 
-  // Filter State
+  // Filter state
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     labels: [],
     sortBy: "rank",
   });
 
-  const columnIds = useMemo(() => columns.map((col) => col.id), [columns]);
-
-  const sensors = useSensors(
-    // ... existing sensors
-    useSensor(MouseSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+  // Debounced server fetch when filters change
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleFilterChange = useCallback(
+    (newFilters: FilterState) => {
+      setFilters(newFilters);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        dispatch(
+          fetchBoardData({
+            boardId,
+            filters: {
+              search: newFilters.search,
+              labels: newFilters.labels.map((l) => Number(l.id)),
+              sort: newFilters.sortBy === "rank" ? undefined : newFilters.sortBy === "dueDate" ? "deadline" : newFilters.sortBy as "title" | "deadline",
+              ascending: true,
+            },
+          })
+        );
+      }, 400);
+    },
+    [boardId, dispatch]
   );
 
-  // Derived filtered tasks
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      // 1. Search Filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesTitle = task.title.toLowerCase().includes(searchLower);
-        const matchesDesc = task.description?.toLowerCase().includes(searchLower);
-        if (!matchesTitle && !matchesDesc) return false;
-      }
-
-      // 2. Label Filter
-      if (filters.labels.length > 0) {
-        const taskLabelIds = task.labels?.map((l) => l.id) || [];
-        // Check if task has AT LEAST ONE of the selected labels
-        const hasMatchingLabel = filters.labels.some((filterLabel) =>
-          taskLabelIds.includes(filterLabel.id)
-        );
-        if (!hasMatchingLabel) return false;
-      }
-
-      return true;
-    });
-  }, [tasks, filters]);
-
-  // Check if we should disable Drag and Drop
-  // We disable DnD if there are active filters or sorting is not by 'rank'
+  // Disable DnD when any filter is active (server re-ordered ranks on sort)
   const isDragDisabled =
     filters.search !== "" ||
     filters.labels.length > 0 ||
     filters.sortBy !== "rank";
 
-  function onDragStart(event: DragStartEvent) {
-    if (isDragDisabled) return; // Prevent drag if filtered
+  const columnIds = useMemo(() => columns.map((col) => col.id), [columns]);
 
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  function onDragStart(event: DragStartEvent) {
+    if (isDragDisabled) return;
     if (event.active.data.current?.type === "Column") {
       setActiveColumn(event.active.data.current.column);
       return;
     }
-
     if (event.active.data.current?.type === "Task") {
       setActiveTask(event.active.data.current.task);
       return;
@@ -123,13 +103,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
   function onDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
-
-    // We only care if we are dragging a task
     if (active.data.current?.type !== "Task") return;
-
-    const isActiveTask = active.data.current?.type === "Task";
-
-    if (!isActiveTask) return;
   }
 
   function onDragEnd(event: DragEndEvent) {
@@ -138,7 +112,6 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
 
     const { active, over } = event;
     if (!over) return;
-
     if (active.data.current?.type !== "Task") return;
 
     const activeTask = tasks.find((t) => t.id === active.id);
@@ -157,13 +130,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
       const [newRank, ok] = lexorank.insert(lastRank, null);
       if (!ok) return;
 
-      dispatch(
-        moveTaskAsync({
-          taskId: activeTask.id,
-          columnId: newListId,
-          rank: newRank,
-        }),
-      );
+      dispatch(moveTaskAsync({ taskId: activeTask.id, columnId: newListId, rank: newRank }));
       return;
     }
 
@@ -173,7 +140,6 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
       if (!overTask) return;
 
       const targetListId = overTask.columnId;
-
       const targetTasks = tasks
         .filter((t) => t.columnId === targetListId && t.id !== activeTask.id)
         .sort((a, b) => compareLexorank(a.rank, b.rank));
@@ -185,31 +151,16 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
         const lastRank = targetTasks.at(-1)?.rank ?? null;
         const [newRank, ok] = lexorank.insert(lastRank, null);
         if (!ok) return;
-
-        dispatch(
-          moveTaskAsync({
-            taskId: activeTask.id,
-            columnId: targetListId,
-            rank: newRank,
-          }),
-        );
+        dispatch(moveTaskAsync({ taskId: activeTask.id, columnId: targetListId, rank: newRank }));
         return;
       }
 
       const prevRank = targetTasks[overIndex - 1]?.rank ?? null;
       const nextRank = targetTasks[overIndex]?.rank ?? null;
-
       const [newRank, ok] = lexorank.insert(prevRank, nextRank);
-
       if (!ok) return;
 
-      dispatch(
-        moveTaskAsync({
-          taskId: activeTask.id,
-          columnId: targetListId,
-          rank: newRank,
-        }),
-      );
+      dispatch(moveTaskAsync({ taskId: activeTask.id, columnId: targetListId, rank: newRank }));
     }
   }
 
@@ -225,9 +176,9 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
   return (
     <>
       <div className="flex flex-col h-full w-full">
-        {/* Filter Component */}
+        {/* Filter Bar */}
         <div className="px-4 md:px-0">
-          <BoardFilter filters={filters} onFilterChange={setFilters} />
+          <BoardFilter filters={filters} onFilterChange={handleFilterChange} />
         </div>
 
         <div className="flex h-full w-full flex-col md:flex-row gap-6 md:overflow-x-auto pb-4 pt-2 snap-y md:snap-x snap-mandatory">
@@ -244,22 +195,9 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                   <BoardColumn
                     key={col.id}
                     column={col}
-                    tasks={filteredTasks
+                    tasks={tasks
                       .filter((task) => task.columnId === Number(col.id))
-                      .sort((a, b) => {
-                        if (filters.sortBy === "rank") {
-                          return compareLexorank(a.rank, b.rank);
-                        }
-                        if (filters.sortBy === "dueDate") {
-                          if (!a.dueDate) return 1;
-                          if (!b.dueDate) return -1;
-                          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-                        }
-                        if (filters.sortBy === "title") {
-                          return a.title.localeCompare(b.title);
-                        }
-                        return 0;
-                      })}
+                      .sort((a, b) => compareLexorank(a.rank, b.rank))}
                     createTask={() => handleCreateTask(Number(col.id))}
                     onTaskClick={onTaskClick}
                   />
@@ -281,7 +219,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                   <BoardColumn
                     column={activeColumn}
                     tasks={tasks.filter(
-                      (task) => task.columnId === Number(activeColumn.id),
+                      (task) => task.columnId === Number(activeColumn.id)
                     )}
                     createTask={() => { }}
                     onTaskClick={() => { }}
@@ -289,7 +227,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                 )}
                 {activeTask && <TaskCard task={activeTask} />}
               </DragOverlay>,
-              document.body,
+              document.body
             )}
           </DndContext>
         </div>

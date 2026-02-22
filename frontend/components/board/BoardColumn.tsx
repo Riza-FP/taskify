@@ -5,9 +5,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { Column, Task } from "@/lib/types";
 import { TaskCard } from "./TaskCard";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
-import { useMemo } from "react";
-import { useState } from "react";
+import { Plus, ArrowUpDown } from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteListAsync, updateListAsync } from "@/store/slices/boardSlice";
 import { toast } from "sonner";
@@ -19,6 +18,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -31,6 +35,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Check, X } from "lucide-react";
+import { getListTasks, ListSortOption } from "@/lib/api/list";
+import { compareLexorank } from "@/lib/lexorank";
 
 interface BoardColumnProps {
   column: Column;
@@ -38,6 +44,16 @@ interface BoardColumnProps {
   onTaskClick?: (task: Task) => void;
   createTask?: () => void;
 }
+
+const SORT_LABELS: Record<ListSortOption | "rank", string> = {
+  "rank": "Default (rank)",
+  "title:asc": "Title A → Z",
+  "title:desc": "Title Z → A",
+  "created_at:asc": "Created (oldest first)",
+  "created_at:desc": "Created (newest first)",
+  "deadline:asc": "Deadline (earliest first)",
+  "deadline:desc": "Deadline (latest first)",
+};
 
 export function BoardColumn({
   column,
@@ -50,7 +66,43 @@ export function BoardColumn({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [title, setTitle] = useState(column.title);
 
-  const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
+  // Per-column sort state
+  const [sortKey, setSortKey] = useState<ListSortOption | "rank">("rank");
+  const [sortedTasks, setSortedTasks] = useState<Task[] | null>(null); // null = use prop tasks
+  const [isSorting, setIsSorting] = useState(false);
+
+  const handleSortChange = useCallback(
+    async (value: string) => {
+      const selected = value as ListSortOption | "rank";
+      setSortKey(selected);
+
+      if (selected === "rank") {
+        setSortedTasks(null); // revert to default prop tasks (sorted by rank)
+        return;
+      }
+
+      setIsSorting(true);
+      try {
+        const fetched = await getListTasks(column.id, selected);
+        setSortedTasks(fetched);
+      } catch {
+        toast.error("Failed to sort tasks");
+        setSortKey("rank");
+        setSortedTasks(null);
+      } finally {
+        setIsSorting(false);
+      }
+    },
+    [column.id]
+  );
+
+  // When tasks prop changes (e.g. new task added), re-apply sort
+  const displayTasks = useMemo(() => {
+    if (sortedTasks !== null) return sortedTasks;
+    return [...tasks].sort((a, b) => compareLexorank(a.rank, b.rank));
+  }, [tasks, sortedTasks]);
+
+  const taskIds = useMemo(() => displayTasks.map((t) => t.id), [displayTasks]);
 
   const {
     setNodeRef,
@@ -67,8 +119,6 @@ export function BoardColumn({
     },
   });
 
-  // Sync internal state with prop
-  // This ensures optimistic updates or server updates are reflected
   useMemo(() => {
     setTitle(column.title);
   }, [column.title]);
@@ -79,7 +129,6 @@ export function BoardColumn({
   };
 
   const handleDeleteList = () => {
-    // Fire and forget - Redux handles optimistic update
     dispatch(deleteListAsync(Number(column.id)));
     toast.success("List deleted");
   };
@@ -89,8 +138,6 @@ export function BoardColumn({
       setIsEditing(false);
       return;
     }
-
-    // Fire and forget - Redux handles optimistic update
     dispatch(updateListAsync({ id: Number(column.id), title }));
     toast.success("List renamed");
     setIsEditing(false);
@@ -106,7 +153,9 @@ export function BoardColumn({
     );
   }
 
-  const isDefaultList = ["Todo", "In Progress", "Done"].includes(column.title);
+  const DEFAULT_LIST_NAMES = ["todo", "to do", "in progress", "done"];
+  const isDefaultList = DEFAULT_LIST_NAMES.includes(column.title.toLowerCase());
+  const isSorted = sortKey !== "rank";
 
   return (
     <div
@@ -159,10 +208,23 @@ export function BoardColumn({
           )}
 
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-200/60 px-1.5 text-xs font-bold text-slate-600">
-            {tasks.length}
+            {displayTasks.length}
           </span>
         </div>
+
         <div className="flex items-center gap-1">
+          {/* Sort indicator */}
+          {isSorted && (
+            <div
+              className="flex h-6 items-center gap-1 rounded-full bg-indigo-100 px-2 text-[10px] font-semibold text-indigo-600 cursor-pointer"
+              onClick={() => handleSortChange("rank")}
+              title="Click to clear sort"
+            >
+              <ArrowUpDown size={10} />
+              {isSorting ? "…" : "sorted"}
+            </div>
+          )}
+
           <button
             onClick={createTask}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-sm transition-all"
@@ -170,30 +232,54 @@ export function BoardColumn({
             <Plus size={18} />
           </button>
 
-          {!isDefaultList && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-sm transition-all outline-none">
-                  <MoreVertical size={18} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>List Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => setIsEditing(true)}
-                >
-                  Rename
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                >
-                  Delete List
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-white hover:text-slate-700 hover:shadow-sm transition-all outline-none">
+                <MoreVertical size={18} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>List Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              {/* Sort submenu */}
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  Sort tasks
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup
+                    value={sortKey}
+                    onValueChange={handleSortChange}
+                  >
+                    {(Object.keys(SORT_LABELS) as (ListSortOption | "rank")[]).map(
+                      (key) => (
+                        <DropdownMenuRadioItem key={key} value={key}>
+                          {SORT_LABELS[key]}
+                        </DropdownMenuRadioItem>
+                      )
+                    )}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              {!isDefaultList && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    Delete List
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <AlertDialogContent>
@@ -217,9 +303,12 @@ export function BoardColumn({
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 md:overflow-y-auto px-1 pb-4 scrollbar-hide">
-        <SortableContext items={taskIds}>
-          {tasks.map((task) => (
+      <div className={cn(
+        "flex flex-1 flex-col gap-3 md:overflow-y-auto px-1 pb-4 scrollbar-hide",
+        isSorting && "opacity-60 pointer-events-none"
+      )}>
+        <SortableContext items={taskIds} disabled={isSorted}>
+          {displayTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}

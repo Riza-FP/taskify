@@ -1,7 +1,8 @@
 'use client';
 
-import { Bell, Search, User, Menu } from 'lucide-react';
+import { Search, User, Menu } from 'lucide-react';
 import { useSidebar } from '@/components/providers/SidebarProvider';
+import { NotificationPopover } from './NotificationPopover';
 
 export function Navbar() {
     const { toggle } = useSidebar();
@@ -15,7 +16,6 @@ export function Navbar() {
                 >
                     <Menu size={24} />
                 </button>
-                {/* Mobile menu button could go here */}
                 <div className="relative hidden sm:block">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                     <input
@@ -27,10 +27,7 @@ export function Navbar() {
             </div>
 
             <div className="flex items-center gap-4">
-                <button className="relative rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700">
-                    <Bell size={20} />
-                    <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-                </button>
+                <NotificationPopover />
 
                 <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
                     <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-600 ring-2 ring-white shadow-sm cursor-pointer hover:shadow-md transition-shadow">
