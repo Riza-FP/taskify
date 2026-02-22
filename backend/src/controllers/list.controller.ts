@@ -7,6 +7,7 @@ import type { UpdateListDTO } from "../types/list.type.js";
 export const postLists = async (req: Request, res: Response) => {
     // #swagger.tags = ['List']
     // #swagger.summary = 'Create new list'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { title, board_id, position } = req.body;
 
@@ -24,6 +25,7 @@ export const postLists = async (req: Request, res: Response) => {
 export const getLists = async (req: Request, res: Response) => {
     // #swagger.tags = ['List']
     // #swagger.summary = 'Get lists for a board'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { id } = req.params;
 
@@ -36,6 +38,7 @@ export const getLists = async (req: Request, res: Response) => {
 export const putLists = async (req: Request, res: Response) => {
     // #swagger.tags = ['List']
     // #swagger.summary = 'Update a list'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const listId = Number(id);
@@ -60,6 +63,7 @@ export const putLists = async (req: Request, res: Response) => {
 export const deleteLists = async (req: Request, res: Response) => {
     // #swagger.tags = ['List']
     // #swagger.summary = 'Delete a list'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const listId = Number(id);

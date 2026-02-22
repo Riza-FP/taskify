@@ -8,6 +8,7 @@ import type { SortFilter } from "../types/filter.type.js";
 export const postBoards = async (req: Request, res: Response) => {
     // #swagger.tags = ['Board']
     // #swagger.summary = 'Create new Kanban Board'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
 
     const { id } = (req as any).user;
@@ -31,6 +32,7 @@ export const postBoards = async (req: Request, res: Response) => {
 export const getBoards = async (req: Request, res: Response) => {
     // #swagger.tags = ['Board']
     // #swagger.summary = 'Get all boards that the logged in user have'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const client = (req as any).supabase;
     const boards = await getAllBoards(client);
@@ -42,6 +44,7 @@ export const getBoards = async (req: Request, res: Response) => {
 export const getBoardsById = async (req: Request, res: Response) => {
     // #swagger.tags = ['Board']
     // #swagger.summary = 'Get a board by its Id, also loads all its content'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const client = (req as any).supabase;
     const { id } = req.params;
@@ -73,6 +76,7 @@ export const getBoardsById = async (req: Request, res: Response) => {
 export const putBoards = async (req: Request, res: Response) => {
     // #swagger.tags = ['Board']
     // #swagger.summary = 'Update board metadata'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const supabase = (req as any).supabase;
     const { id } = req.params;
@@ -98,6 +102,7 @@ export const putBoards = async (req: Request, res: Response) => {
 export const deleteBoards = async (req: Request, res: Response) => {
     // #swagger.tags = ['Board']
     // #swagger.summary = 'Delete a board'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const supabase = (req as any).supabase;
     const { id } = req.params;

@@ -5,7 +5,15 @@ const doc = {
         title: 'Taskify REST API',
         description: 'Taskify Backend REST API Documentation'
     },
-    host: 'taskify-deployments-production.up.railway.app'
+    host: 'taskify-deployments-production.up.railway.app',
+    securityDefinitions: {
+        bearerAuth: {
+            type: 'apiKey',
+            in: 'header',
+            name: 'Authorization',
+            description: 'Enter your bearer token: Bearer <token>'
+        }
+    }
 };
 
 const outputFile = './swagger-output.json';

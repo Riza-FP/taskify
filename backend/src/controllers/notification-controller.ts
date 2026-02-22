@@ -6,6 +6,7 @@ import { success } from "../utils/response.js";
 export const putNotificationSettings = async (req: Request, res: Response) => {
     // #swagger.tags = ['Settings']
     // #swagger.summary = 'Set user notification settings'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const { days } = req.body;
     const supabase = (req as any).supabase;
     const data = await updateNotificationSetting(supabase, Number(days));
@@ -16,6 +17,7 @@ export const putNotificationSettings = async (req: Request, res: Response) => {
 export const getNotificationSettings = async (req: Request, res: Response) => {
     // #swagger.tags = ['Settings']
     // #swagger.summary = 'Get user current notification settings'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const data = await selectNotificationSetting(supabase);
     res.status(StatusCodes.OK).json(success("Notification fetched successfully", data));

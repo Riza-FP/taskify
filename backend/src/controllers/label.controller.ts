@@ -7,6 +7,7 @@ import { createLabelToTask, deleteLabelToTask, selectTaskLabel } from "../servic
 export const getLabels = async (req: Request, res: Response) => {
     // #swagger.tags = ['Label']
     // #swagger.summary = 'Get all labels, optional title filter'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const query = req.query.search ?? null;
 
@@ -17,6 +18,7 @@ export const getLabels = async (req: Request, res: Response) => {
 export const deleteLabels = async (req: Request, res: Response) => {
     // #swagger.tags = ['Label']
     // #swagger.summary = 'Delete a label by ID'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const supabase = (req as any).supabase;
 
@@ -30,6 +32,7 @@ export const deleteLabels = async (req: Request, res: Response) => {
 export const putLabels = async (req: Request, res: Response) => {
     // #swagger.tags = ['Label']
     // #swagger.summary = 'Update a label'
+    // #swagger.security = [{ "bearerAuth": [] }]
 
     const { title, color } = req.body;
     const supabase = (req as any).supabase;
@@ -48,6 +51,7 @@ export const putLabels = async (req: Request, res: Response) => {
 export const postLabels = async (req: Request, res: Response) => {
     // #swagger.tags = ['Label']
     // #swagger.summary = 'Create new label, needs to assign to a task'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const { title, color, taskId } = req.body;
     const supabase = (req as any).supabase;
 
@@ -59,6 +63,7 @@ export const postLabels = async (req: Request, res: Response) => {
 export const toggleLabels = async (req: Request, res: Response) => {
     // #swagger.tags = ['Label']
     // #swagger.summary = 'Assign or unassign label to a task'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const { taskId, labelId } = req.body;
     const supabase = (req as any).supabase;
 

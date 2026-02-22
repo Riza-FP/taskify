@@ -8,6 +8,7 @@ import type { SortFilter } from "../types/filter.type.js";
 export const postTasks = async (req: Request, res: Response) => {
     // #swagger.tags = ['Task']
     // #swagger.summary = 'Create new task'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
 
     const task = await createTask(supabase, req.body);
@@ -18,6 +19,7 @@ export const postTasks = async (req: Request, res: Response) => {
 export const putTasks = async (req: Request, res: Response) => {
     // #swagger.tags = ['Task']
     // #swagger.summary = 'Update a task'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
 
     const { id } = req.params;
@@ -46,6 +48,7 @@ export const putTasks = async (req: Request, res: Response) => {
 export const deleteTasks = async (req: Request, res: Response) => {
     // #swagger.tags = ['Task']
     // #swagger.summary = 'Delete task'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const taskId = Number(id);
@@ -62,6 +65,7 @@ export const deleteTasks = async (req: Request, res: Response) => {
 export const getTasksForList = async (req: Request, res: Response) => {
     // #swagger.tags = ['Task']
     // #swagger.summary = 'Get tasks for a list. Optional sortings available'
+    // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const { id } = req.params;
     const listId = Number(id);
