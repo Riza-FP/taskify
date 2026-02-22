@@ -733,7 +733,7 @@
         ]
       }
     },
-    "/api/v1/notifications/": {
+    "/api/v1/notification/inbox/": {
       "get": {
         "tags": [
           "Notification"
@@ -759,7 +759,7 @@
         ]
       }
     },
-    "/api/v1/notifications/{id}": {
+    "/api/v1/notification/inbox/{id}": {
       "put": {
         "tags": [
           "Notification"

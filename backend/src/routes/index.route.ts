@@ -14,7 +14,7 @@ router.use("/lists", listRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/labels", labelRoutes);
 router.use("/boards", boardRoutes);
-router.use("/notifications", notificationRoutes);
+router.use("/notification/inbox", notificationRoutes);
 router.use("/notification/settings", notificationSettingRoutes);
 router.use("/healthcheck", (_, res) => { res.status(200).json({ status: "operational" }) })
 export default router;
