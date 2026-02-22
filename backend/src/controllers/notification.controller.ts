@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { selectNotificationSetting, updateNotificationSetting } from "../services/notification.service.js";
+import { getAllNotifications, markNotificationAsSeen, selectNotificationSetting, updateNotificationSetting } from "../services/notification.service.js";
 import { StatusCodes } from "http-status-codes";
 import { success } from "../utils/response.js";
 
@@ -20,5 +20,26 @@ export const getNotificationSettings = async (req: Request, res: Response) => {
     // #swagger.security = [{ "bearerAuth": [] }]
     const supabase = (req as any).supabase;
     const data = await selectNotificationSetting(supabase);
+    res.status(StatusCodes.OK).json(success("Notification fetched successfully", data));
+}
+
+
+export const putNotifications = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Notification']
+    // #swagger.summary = 'Mark user notification as seen'
+    // #swagger.security = [{ "bearerAuth": [] }]
+    const { id } = req.params;
+    const supabase = (req as any).supabase;
+    const data = await markNotificationAsSeen(supabase, Number(id));
+    res.status(StatusCodes.OK).json(success("Notification updated successfully", data));
+}
+
+
+export const getNotifications = async (req: Request, res: Response) => {
+    // #swagger.tags = ['Notification']
+    // #swagger.summary = 'get user notifications'
+    // #swagger.security = [{ "bearerAuth": [] }]
+    const supabase = (req as any).supabase;
+    const data = await getAllNotifications(supabase);
     res.status(StatusCodes.OK).json(success("Notification fetched successfully", data));
 }

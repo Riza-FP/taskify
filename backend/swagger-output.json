@@ -733,6 +733,64 @@
         ]
       }
     },
+    "/api/v1/notifications/": {
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "get user notifications",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}": {
+      "put": {
+        "tags": [
+          "Notification"
+        ],
+        "summary": "Mark user notification as seen",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/notification/settings/": {
       "get": {
         "tags": [

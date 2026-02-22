@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../database.types.js";
 import { AuthenticationError } from "../utils/errors.js";
+import type { Notification } from "../types/notification.type.js";
 
 export async function updateNotificationSetting(supabase: SupabaseClient<Database>, days: number) {
     const { data, error: uError } = await supabase.auth.getUser();
@@ -41,4 +42,22 @@ export async function selectNotificationSetting(supabase: SupabaseClient<Databas
     }
 
     return sData;
+}
+
+
+export async function markNotificationAsSeen(supabase: SupabaseClient<Database>, id: number): Promise<Notification> {
+    const { data, error } = await supabase.from("notifications").update({
+        is_seen: true,
+    }).select().eq("id", id).single();
+
+    if (error) throw error;
+    if (!data) throw new Error("Notification not found");
+
+    return data;
+}
+
+export async function getAllNotifications(supabase: SupabaseClient<Database>): Promise<Notification[]> {
+    const { data, error } = await supabase.from("notifications").select();
+    if (error) throw error;
+    return data || [];
 }
