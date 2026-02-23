@@ -2,6 +2,10 @@
 
 Taskify is a Kanban-based task management application designed to help individuals and small teams organize their work visually. 
 
+## Live Demo
+- Frontend: https://taskify-frontend-lilac.vercel.app
+- Backend: taskify-deployments-production.up.railway.app
+
 ## 🚀 Features
 - **Kanban Board:** Organize tasks into columns (To Do, In Progress, Done).
 - **Drag-and-Drop:** Move tasks between categories to update progress.
